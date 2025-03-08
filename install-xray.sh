@@ -6,7 +6,7 @@ apt install -y curl unzip jq
 
 # Download and install XRay
 mkdir -p /etc/xray
-bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install --version latest
+bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
 
 # Generate UUID for XRay client
 UUID=$(cat /proc/sys/kernel/random/uuid)
