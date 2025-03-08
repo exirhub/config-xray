@@ -12,7 +12,7 @@ bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release
 UUID=$(cat /proc/sys/kernel/random/uuid)
 
 # Fetch base domain from API (Replace with your actual API URL)
-API_URL="http://api.exirvpn.com/api/rest/githubdomains"
+API_URL="http://api.exirvpn.com:1643/api/rest/githubdomains"
 API_RESPONSE=$(curl -s "$API_URL")
 
 # Extract values from API response
