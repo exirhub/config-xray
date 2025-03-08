@@ -11,18 +11,24 @@ bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release
 # Generate UUID for XRay client
 UUID=$(cat /proc/sys/kernel/random/uuid)
 
-# Fetch domain from API (Replace with your actual API URL)
+# Fetch base domain from API (Replace with your actual API URL)
 API_URL="https://api.exirvpn.com/api/rest/githubdomains"
 API_RESPONSE=$(curl -s "$API_URL")
 
 # Extract values from API response
-DOMAIN=$(echo "$API_RESPONSE" | jq -r '.domain')
+BASE_DOMAIN=$(echo "$API_RESPONSE" | jq -r '.domain')
 
-# Check if domain was received
-if [[ -z "$DOMAIN" || "$DOMAIN" == "null" ]]; then
-    echo "❌ Error: Could not retrieve domain from API."
+# Check if base domain was received
+if [[ -z "$BASE_DOMAIN" || "$BASE_DOMAIN" == "null" ]]; then
+    echo "❌ Error: Could not retrieve base domain from API."
     exit 1
 fi
+
+# Get server's public IP
+SERVER_IP=$(curl -s ifconfig.me)
+
+# Convert IP to subdomain (replace dots with dashes)
+SUBDOMAIN="${SERVER_IP//./-}.$BASE_DOMAIN"
 
 # Set paths for certificates
 CERT_PATH="/etc/xray/cert.pem"
@@ -68,7 +74,7 @@ cat > /etc/xray/config.json <<EOF
         "wsSettings": {
           "path": "/ws",
           "headers": {
-            "Host": "$DOMAIN"
+            "Host": "$SUBDOMAIN"
           }
         }
       }
@@ -90,6 +96,7 @@ systemctl restart xray
 # Display connection details
 echo "✅ XRay VLESS + WS + TLS Installed!"
 echo "🔑 UUID: $UUID"
-echo "🌐 Domain: $DOMAIN"
+echo "🌐 Base Domain: $BASE_DOMAIN"
+echo "🌐 Subdomain: $SUBDOMAIN"
 echo "🔗 WebSocket Path: /ws"
 echo "⚡ Cloudflare Origin SSL has been set up manually!"
