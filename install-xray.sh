@@ -25,7 +25,7 @@ if [[ -z "$BASE_DOMAIN" || "$BASE_DOMAIN" == "null" ]]; then
 fi
 
 # Get server's public IP
-SERVER_IP=$(curl -s ifconfig.me)
+SERVER_IP=$(curl -s4 ifconfig.me)
 
 # Convert IP to subdomain (replace dots with dashes)
 SUBDOMAIN="${SERVER_IP//./-}.$BASE_DOMAIN"
