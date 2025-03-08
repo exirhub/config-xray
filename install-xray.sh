@@ -12,24 +12,31 @@ bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release
 UUID=$(cat /proc/sys/kernel/random/uuid)
 
 # Fetch domain from API (Replace with your actual API URL)
-API_URL="https://api.exirvpn.com/get-domain"
-DOMAIN=$(curl -s "$API_URL" | jq -r '.domain')
+API_URL="https://your-api.com/get-domain"
+API_RESPONSE=$(curl -s "$API_URL")
 
-# Check if the domain was received
+# Extract values from API response
+DOMAIN=$(echo "$API_RESPONSE" | jq -r '.domain')
+
+# Check if domain was received
 if [[ -z "$DOMAIN" || "$DOMAIN" == "null" ]]; then
     echo "❌ Error: Could not retrieve domain from API."
     exit 1
 fi
 
-# Install acme.sh for SSL certificates
-curl https://get.acme.sh | sh -s email=your@email.com
-~/.acme.sh/acme.sh --set-default-ca --server letsencrypt
+# Set paths for certificates
+CERT_PATH="/etc/xray/cert.pem"
+KEY_PATH="/etc/xray/key.pem"
 
-# Issue SSL certificate
-~/.acme.sh/acme.sh --issue -d "$DOMAIN" --standalone
-~/.acme.sh/acme.sh --install-cert -d "$DOMAIN" \
-    --key-file /etc/xray/key.pem \
-    --fullchain-file /etc/xray/cert.pem
+# Ask the user to paste Cloudflare Origin Certificate manually
+echo "⚡ Please paste your Cloudflare Origin Certificate (Press Enter to finish):"
+cat > "$CERT_PATH"
+
+echo "⚡ Please paste your Cloudflare Origin Private Key (Press Enter to finish):"
+cat > "$KEY_PATH"
+
+# Set correct permissions
+chmod 600 "$CERT_PATH" "$KEY_PATH"
 
 # Create XRay server config
 cat > /etc/xray/config.json <<EOF
@@ -53,8 +60,8 @@ cat > /etc/xray/config.json <<EOF
         "tlsSettings": {
           "certificates": [
             {
-              "certificateFile": "/etc/xray/cert.pem",
-              "keyFile": "/etc/xray/key.pem"
+              "certificateFile": "$CERT_PATH",
+              "keyFile": "$KEY_PATH"
             }
           ]
         },
@@ -76,7 +83,7 @@ cat > /etc/xray/config.json <<EOF
 }
 EOF
 
-# Enable and start XRay service
+# Enable and restart XRay service
 systemctl enable xray
 systemctl restart xray
 
@@ -85,3 +92,4 @@ echo "✅ XRay VLESS + WS + TLS Installed!"
 echo "🔑 UUID: $UUID"
 echo "🌐 Domain: $DOMAIN"
 echo "🔗 WebSocket Path: /ws"
+echo "⚡ Cloudflare Origin SSL has been set up manually!"
