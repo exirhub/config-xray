@@ -13,7 +13,7 @@ UUID="b1ecf833-9387-4fa4-ace1-6644facbbb6a"
 PORT="8443"
 
 # Set XRay config file path
-CONFIG_PATH="/etc/xray/config.json"
+CONFIG_PATH="/usr/local/etc/xray/config.json"
 
 # Create XRay server config with TCP transmission on port 8443 (No TLS)
 cat > $CONFIG_PATH <<EOF
