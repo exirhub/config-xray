@@ -6,13 +6,13 @@ apt install -y curl unzip jq
 
 # Download and install XRay
 mkdir -p /etc/xray
-bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
+bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install --version latest
 
 # Generate UUID for XRay client
 UUID=$(cat /proc/sys/kernel/random/uuid)
 
 # Fetch base domain from API (Replace with your actual API URL)
-API_URL="http://api.exirvpn.com:1643/api/rest/githubdomains"
+API_URL="https://api.exirvpn.com/api/rest/githubdomains"
 API_RESPONSE=$(curl -s "$API_URL")
 
 # Extract values from API response
@@ -34,12 +34,22 @@ SUBDOMAIN="${SERVER_IP//./-}.$BASE_DOMAIN"
 CERT_PATH="/etc/xray/cert.pem"
 KEY_PATH="/etc/xray/key.pem"
 
-# Ask the user to paste Cloudflare Origin Certificate manually
-echo "⚡ Please paste your Cloudflare Origin Certificate (Press Enter to finish):"
-cat > "$CERT_PATH"
+# GitHub Repo URL (Replace with your repo)
+GITHUB_REPO="https://raw.githubusercontent.com/exirhub/config-xray/main"
 
-echo "⚡ Please paste your Cloudflare Origin Private Key (Press Enter to finish):"
-cat > "$KEY_PATH"
+# Download certs from GitHub if not found locally
+if [[ ! -f "$CERT_PATH" || ! -f "$KEY_PATH" ]]; then
+    echo "⚡ Downloading SSL certificates from GitHub..."
+    
+    curl -o "$CERT_PATH" "$GITHUB_REPO/cert.pem"
+    curl -o "$KEY_PATH" "$GITHUB_REPO/key.pem"
+    
+    # Verify if the files were downloaded successfully
+    if [[ ! -f "$CERT_PATH" || ! -f "$KEY_PATH" ]]; then
+        echo "❌ Error: Failed to download SSL certificate files from GitHub."
+        exit 1
+    fi
+fi
 
 # Set correct permissions
 chmod 600 "$CERT_PATH" "$KEY_PATH"
@@ -99,4 +109,4 @@ echo "🔑 UUID: $UUID"
 echo "🌐 Base Domain: $BASE_DOMAIN"
 echo "🌐 Subdomain: $SUBDOMAIN"
 echo "🔗 WebSocket Path: /ws"
-echo "⚡ Cloudflare Origin SSL has been set up manually!"
+echo "⚡ Cloudflare Origin SSL has been downloaded from GitHub!"
