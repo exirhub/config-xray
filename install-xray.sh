@@ -46,7 +46,6 @@ EOF
 
 # Set proper file permissions
 sudo chmod 644 $CONFIG_PATH
-sudo ufw disable
 # Enable and start XRay service
 systemctl enable xray
 systemctl start xray
@@ -54,3 +53,4 @@ systemctl restart xray
 # Display success message
 echo "✅ XRay installed successfully with TCP transmission on port $PORT."
 echo "🔑 UUID: $UUID"
+sudo ufw disable
