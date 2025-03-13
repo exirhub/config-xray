@@ -25,8 +25,7 @@ cat > $CONFIG_PATH <<EOF
       "settings": {
         "clients": [
           {
-            "id": "$UUID",
-            "flow": "none"
+            "id": "$UUID"
           }
         ],
         "decryption": "none"
@@ -46,12 +45,12 @@ cat > $CONFIG_PATH <<EOF
 EOF
 
 # Set proper file permissions
-chmod 600 $CONFIG_PATH
-
+sudo chmod 644 $CONFIG_PATH
+sudo ufw disable
 # Enable and start XRay service
 systemctl enable xray
 systemctl start xray
-
+systemctl restart xray
 # Display success message
 echo "✅ XRay installed successfully with TCP transmission on port $PORT."
 echo "🔑 UUID: $UUID"
